@@ -11,11 +11,11 @@
 <body>
   <button id="mic" class="mic" aria-label="Hablar" aria-pressed="false">🎙️</button>
   <div id="status" role="status" aria-live="polite"></div>
-  <iframe id="app" title="Aplicación CTRLFinanzas" src="https://script.google.com/macros/s/AKfycbyw-WpulPPihc5GaNjpJxGmDtRxw2pQg4SKvaNMvo3IKXT694c2ZZ-OxxU5pLRGRQLb7A/exec?externalVoice=1" allow="clipboard-write"></iframe>
+  <iframe id="app" title="Aplicación CTRLFinanzas" src="https://script.google.com/macros/s/AKfycbxfLTVhBG5CQ3_WX55LsU6SLwZkOqL3HqNAYI90bUzYWSI_SzoRNIBF6lx5JNVWGefDYA/exec?externalVoice=1" allow="clipboard-write"></iframe>
   <elevenlabs-convai agent-id="agent_8501kx4nahsbf21a3gkgcvdk29f1"></elevenlabs-convai>
   <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async></script>
   <script>
-    const APP_URL='https://script.google.com/macros/s/AKfycbyw-WpulPPihc5GaNjpJxGmDtRxw2pQg4SKvaNMvo3IKXT694c2ZZ-OxxU5pLRGRQLb7A/exec';
+    const APP_URL='https://script.google.com/macros/s/AKfycbxfLTVhBG5CQ3_WX55LsU6SLwZkOqL3HqNAYI90bUzYWSI_SzoRNIBF6lx5JNVWGefDYA/exec';
     const mic=document.querySelector('#mic'),status=document.querySelector('#status'),frame=document.querySelector('#app');
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
     function say(text,bad){status.textContent=text;status.style.background=bad?'#8f1730':'#17324d';status.classList.add('show');setTimeout(()=>status.classList.remove('show'),3500)}
