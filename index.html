@@ -3,57 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>CTRLFinanzas Voz</title>
-  <style>
-    *{box-sizing:border-box}body{margin:0;background:#eef4fa;font:16px system-ui;color:#17324d}.mic{position:fixed;z-index:10;top:180px;left:50%;transform:translateX(-50%);display:grid;place-items:center;width:104px;height:104px;border:0;border-radius:50%;background:linear-gradient(145deg,#1457d9,#0e8da1);color:white;font-size:42px;cursor:pointer;box-shadow:0 8px 28px #1457d944}.mic[hidden]{display:none}.mic.on{background:#bb2845;animation:pulse 1.2s infinite}@keyframes pulse{50%{transform:translateX(-50%) scale(1.06)}}#status{position:fixed;z-index:11;top:140px;left:50%;transform:translateX(-50%);background:#17324d;color:white;padding:8px 14px;border-radius:10px;opacity:0;transition:.2s;pointer-events:none}#status.show{opacity:1}iframe{display:block;border:0;width:100%;height:100vh;background:white}@media(max-width:600px){.mic{top:185px}#status{top:145px}}
-  </style>
+  <meta http-equiv="refresh" content="0;url=https://script.google.com/macros/s/AKfycbxfLTVhBG5CQ3_WX55LsU6SLwZkOqL3HqNAYI90bUzYWSI_SzoRNIBF6lx5JNVWGefDYA/exec">
+  <title>Abriendo CTRLFinanzas</title>
+  <style>body{display:grid;min-height:100vh;place-items:center;margin:0;background:#f4f7fb;color:#17324d;font:16px system-ui;text-align:center}a{display:inline-block;margin-top:1rem;padding:.8rem 1rem;border-radius:12px;background:#1457d9;color:white;font-weight:700;text-decoration:none}</style>
 </head>
 <body>
-  <button id="mic" class="mic" aria-label="Hablar" aria-pressed="false">🎙️</button>
-  <div id="status" role="status" aria-live="polite"></div>
-  <iframe id="app" title="Aplicación CTRLFinanzas" src="https://script.google.com/macros/s/AKfycbxfLTVhBG5CQ3_WX55LsU6SLwZkOqL3HqNAYI90bUzYWSI_SzoRNIBF6lx5JNVWGefDYA/exec?externalVoice=1" allow="clipboard-write"></iframe>
-  <elevenlabs-convai agent-id="agent_8501kx4nahsbf21a3gkgcvdk29f1"></elevenlabs-convai>
-  <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async></script>
-  <script>
-    const APP_URL='https://script.google.com/macros/s/AKfycbxfLTVhBG5CQ3_WX55LsU6SLwZkOqL3HqNAYI90bUzYWSI_SzoRNIBF6lx5JNVWGefDYA/exec';
-    const mic=document.querySelector('#mic'),status=document.querySelector('#status'),frame=document.querySelector('#app');
-    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-    function say(text,bad){status.textContent=text;status.style.background=bad?'#8f1730':'#17324d';status.classList.add('show');setTimeout(()=>status.classList.remove('show'),3500)}
-    const PUBLIC_URL='https://juliocesar1004.github.io/CTRLFinanzas/';
-    async function shareApp(){
-      try{
-        if(navigator.share){await navigator.share({title:'CTRLFinanzas',text:'Registre sus ventas con la voz',url:PUBLIC_URL});return}
-        await navigator.clipboard.writeText(PUBLIC_URL);say('Enlace copiado. Ya puede compartirlo.');
-      }catch(error){
-        if(error&&error.name==='AbortError')return;
-        try{const input=document.createElement('textarea');input.value=PUBLIC_URL;input.setAttribute('readonly','');input.style.position='fixed';input.style.opacity='0';document.body.appendChild(input);input.select();document.execCommand('copy');input.remove();say('Enlace copiado. Ya puede compartirlo.')}catch(ignore){say('Enlace para compartir: '+PUBLIC_URL,true)}
-      }
-    }
-    let currentView='inicio',dialogOpen=false;
-    function updateMicVisibility(){mic.hidden=currentView!=='inicio'||dialogOpen}
-    window.addEventListener('message',e=>{const trusted=e.origin.endsWith('.googleusercontent.com')||e.origin==='https://script.google.com';if(!trusted||!e.data||e.data.source!=='CTRLFINANZAS_APP')return;if(e.data.type==='view'){currentView=e.data.view;updateMicVisibility()}if(e.data.type==='dialog'){dialogOpen=!!e.data.open;updateMicVisibility()}if(e.data.type==='share')shareApp()});
-    async function requestMicrophone(){
-      if(!window.isSecureContext)throw new Error('INSECURE');
-      if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error('UNSUPPORTED');
-      const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});
-      stream.getTracks().forEach(track=>track.stop());
-    }
-    function microphoneError(error){
-      const name=error&&error.name||error&&error.message||'';
-      if(/NotAllowed|PermissionDenied|DENIED|not-allowed/i.test(name))return 'El micrófono está bloqueado. Haga clic en el candado de la barra de direcciones, seleccione Micrófono → Permitir y recargue la página.';
-      if(/NotFound|DevicesNotFound|audio-capture/i.test(name))return 'No se encontró un micrófono conectado al computador.';
-      if(/NotReadable|TrackStart|Abort/i.test(name))return 'El micrófono está ocupado por otra aplicación. Cierre otras llamadas o grabadores e intente nuevamente.';
-      if(/INSECURE/i.test(name))return 'El micrófono requiere una conexión HTTPS segura.';
-      return 'No fue posible iniciar el micrófono. Revise el permiso del sitio e intente nuevamente.';
-    }
-    if(!SR){mic.disabled=true;say('El reconocimiento de voz requiere Google Chrome o Microsoft Edge actualizado.',true)}else{
-      const recognition=new SR();let received=false;recognition.lang='es-CO';recognition.continuous=false;recognition.interimResults=false;recognition.maxAlternatives=1;
-      recognition.onstart=()=>{mic.classList.add('on');mic.setAttribute('aria-pressed','true');say('Escuchando…')};
-      recognition.onend=()=>{mic.classList.remove('on');mic.setAttribute('aria-pressed','false');mic.disabled=false;if(!received)say('No escuché una frase. Pulse el micrófono e intente otra vez.',true)};
-      recognition.onerror=e=>{received=true;mic.disabled=false;say(microphoneError({name:e.error}),true)};
-      recognition.onresult=e=>{received=true;const text=e.results[0][0].transcript;say('Procesando: '+text);frame.src=APP_URL+'?externalVoice=1&voice='+encodeURIComponent(text)+'&t='+Date.now()};
-      mic.onclick=async()=>{mic.disabled=true;received=false;say('Comprobando micrófono…');try{await requestMicrophone();recognition.start()}catch(error){mic.disabled=false;say(microphoneError(error),true)}};
-    }
-  </script>
+  <main><h1>CTRLFinanzas</h1><p>Abriendo la aplicación segura…</p><a href="https://script.google.com/macros/s/AKfycbxfLTVhBG5CQ3_WX55LsU6SLwZkOqL3HqNAYI90bUzYWSI_SzoRNIBF6lx5JNVWGefDYA/exec">Abrir CTRLFinanzas</a></main>
+  <script>location.replace('https://script.google.com/macros/s/AKfycbxfLTVhBG5CQ3_WX55LsU6SLwZkOqL3HqNAYI90bUzYWSI_SzoRNIBF6lx5JNVWGefDYA/exec');</script>
 </body>
 </html>
