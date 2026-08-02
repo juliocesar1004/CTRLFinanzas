@@ -1,1 +1,32 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CTRLFinanzas Voz</title><style>*{box-sizing:border-box}body{margin:0;background:#eef4fa;font:16px system-ui;color:#17324d}.bar{height:72px;background:linear-gradient(130deg,#0b4cb8,#087b7c);color:#fff;display:flex;align-items:center;gap:16px;padding:10px 18px}.bar strong{font-size:1.2rem}.bar span{opacity:.85}.mic{margin-left:auto;width:54px;height:54px;border:0;border-radius:50%;background:#fff;color:#1457d9;font-size:25px;cursor:pointer}.mic.on{background:#c32245;color:#fff;animation:pulse 1.2s infinite}@keyframes pulse{50%{transform:scale(1.08)}}#status{position:fixed;z-index:3;top:80px;left:50%;transform:translateX(-50%);background:#17324d;color:white;padding:8px 14px;border-radius:10px;opacity:0;transition:.2s;pointer-events:none}#status.show{opacity:1}iframe{display:block;border:0;width:100%;height:calc(100vh - 72px);background:white}@media(max-width:600px){.bar span{display:none}}</style></head><body><header class="bar"><div><strong>CTRLFinanzas</strong><br><span>Registro por voz habilitado</span></div><button id="mic" class="mic" aria-label="Hablar" aria-pressed="false">🎙️</button></header><div id="status" role="status" aria-live="polite"></div><iframe id="app" title="Aplicación CTRLFinanzas" src="https://script.google.com/macros/s/AKfycbyw-WpulPPihc5GaNjpJxGmDtRxw2pQg4SKvaNMvo3IKXT694c2ZZ-OxxU5pLRGRQLb7A/exec" allow="clipboard-write"></iframe><elevenlabs-convai agent-id="agent_8501kx4nahsbf21a3gkgcvdk29f1"></elevenlabs-convai><script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async></script><script>const mic=document.querySelector('#mic'),status=document.querySelector('#status'),frame=document.querySelector('#app');const SR=window.SpeechRecognition||window.webkitSpeechRecognition;function say(t,bad){status.textContent=t;status.style.background=bad?'#8f1730':'#17324d';status.classList.add('show');setTimeout(()=>status.classList.remove('show'),3500)}if(!SR){mic.disabled=true;say('Use Google Chrome o Microsoft Edge',true)}else{const r=new SR();r.lang='es-CO';r.continuous=false;r.interimResults=false;r.onstart=()=>{mic.classList.add('on');mic.setAttribute('aria-pressed','true');say('Escuchando…')};r.onend=()=>{mic.classList.remove('on');mic.setAttribute('aria-pressed','false')};r.onerror=e=>say(e.error==='not-allowed'?'Permita el micrófono para este sitio':'No fue posible reconocer la voz',true);r.onresult=e=>{const text=e.results[0][0].transcript;say('Reconocido: '+text);frame.contentWindow.postMessage({source:'CTRLFINANZAS_VOICE',type:'transcript',text},'*')};mic.onclick=()=>{try{r.start()}catch(e){r.stop()}}}</script></body></html>
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CTRLFinanzas Voz</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#eef4fa;font:16px system-ui;color:#17324d}.bar{height:72px;background:linear-gradient(130deg,#0b4cb8,#087b7c);color:#fff;display:flex;align-items:center;gap:16px;padding:10px 18px}.bar strong{font-size:1.2rem}.bar span{opacity:.85}.mic{margin-left:auto;width:54px;height:54px;border:0;border-radius:50%;background:#fff;color:#1457d9;font-size:25px;cursor:pointer}.mic.on{background:#c32245;color:#fff;animation:pulse 1.2s infinite}@keyframes pulse{50%{transform:scale(1.08)}}#status{position:fixed;z-index:3;top:80px;left:50%;transform:translateX(-50%);background:#17324d;color:white;padding:8px 14px;border-radius:10px;opacity:0;transition:.2s;pointer-events:none}#status.show{opacity:1}iframe{display:block;border:0;width:100%;height:calc(100vh - 72px);background:white}@media(max-width:600px){.bar span{display:none}}
+  </style>
+</head>
+<body>
+  <header class="bar"><div><strong>CTRLFinanzas</strong><br><span>Registro por voz habilitado</span></div><button id="mic" class="mic" aria-label="Hablar" aria-pressed="false">🎙️</button></header>
+  <div id="status" role="status" aria-live="polite"></div>
+  <iframe id="app" title="Aplicación CTRLFinanzas" src="https://script.google.com/macros/s/AKfycbyw-WpulPPihc5GaNjpJxGmDtRxw2pQg4SKvaNMvo3IKXT694c2ZZ-OxxU5pLRGRQLb7A/exec" allow="clipboard-write"></iframe>
+  <elevenlabs-convai agent-id="agent_8501kx4nahsbf21a3gkgcvdk29f1"></elevenlabs-convai>
+  <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async></script>
+  <script>
+    const APP_URL='https://script.google.com/macros/s/AKfycbyw-WpulPPihc5GaNjpJxGmDtRxw2pQg4SKvaNMvo3IKXT694c2ZZ-OxxU5pLRGRQLb7A/exec';
+    const mic=document.querySelector('#mic'),status=document.querySelector('#status'),frame=document.querySelector('#app');
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    function say(text,bad){status.textContent=text;status.style.background=bad?'#8f1730':'#17324d';status.classList.add('show');setTimeout(()=>status.classList.remove('show'),3500)}
+    if(!SR){mic.disabled=true;say('Use Google Chrome o Microsoft Edge',true)}else{
+      const recognition=new SR();recognition.lang='es-CO';recognition.continuous=false;recognition.interimResults=false;
+      recognition.onstart=()=>{mic.classList.add('on');mic.setAttribute('aria-pressed','true');say('Escuchando…')};
+      recognition.onend=()=>{mic.classList.remove('on');mic.setAttribute('aria-pressed','false')};
+      recognition.onerror=e=>say(e.error==='not-allowed'?'Permita el micrófono para este sitio':'No fue posible reconocer la voz',true);
+      recognition.onresult=e=>{const text=e.results[0][0].transcript;say('Procesando: '+text);frame.src=APP_URL+'?voice='+encodeURIComponent(text)+'&t='+Date.now()};
+      mic.onclick=()=>{try{recognition.start()}catch(e){recognition.stop()}};
+    }
+  </script>
+</body>
+</html>
