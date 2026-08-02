@@ -29,7 +29,9 @@
         try{const input=document.createElement('textarea');input.value=PUBLIC_URL;input.setAttribute('readonly','');input.style.position='fixed';input.style.opacity='0';document.body.appendChild(input);input.select();document.execCommand('copy');input.remove();say('Enlace copiado. Ya puede compartirlo.')}catch(ignore){say('Enlace para compartir: '+PUBLIC_URL,true)}
       }
     }
-    window.addEventListener('message',e=>{const trusted=e.origin.endsWith('.googleusercontent.com')||e.origin==='https://script.google.com';if(!trusted||!e.data||e.data.source!=='CTRLFINANZAS_APP')return;if(e.data.type==='view')mic.hidden=e.data.view!=='inicio';if(e.data.type==='share')shareApp()});
+    let currentView='inicio',dialogOpen=false;
+    function updateMicVisibility(){mic.hidden=currentView!=='inicio'||dialogOpen}
+    window.addEventListener('message',e=>{const trusted=e.origin.endsWith('.googleusercontent.com')||e.origin==='https://script.google.com';if(!trusted||!e.data||e.data.source!=='CTRLFINANZAS_APP')return;if(e.data.type==='view'){currentView=e.data.view;updateMicVisibility()}if(e.data.type==='dialog'){dialogOpen=!!e.data.open;updateMicVisibility()}if(e.data.type==='share')shareApp()});
     async function requestMicrophone(){
       if(!window.isSecureContext)throw new Error('INSECURE');
       if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error('UNSUPPORTED');
