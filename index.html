@@ -20,13 +20,27 @@
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
     function say(text,bad){status.textContent=text;status.style.background=bad?'#8f1730':'#17324d';status.classList.add('show');setTimeout(()=>status.classList.remove('show'),3500)}
     window.addEventListener('message',e=>{if(!e.origin.endsWith('.googleusercontent.com')||!e.data||e.data.source!=='CTRLFINANZAS_APP'||e.data.type!=='view')return;mic.hidden=e.data.view!=='inicio'});
-    if(!SR){mic.disabled=true;say('Use Google Chrome o Microsoft Edge',true)}else{
-      const recognition=new SR();recognition.lang='es-CO';recognition.continuous=false;recognition.interimResults=false;
+    async function requestMicrophone(){
+      if(!window.isSecureContext)throw new Error('INSECURE');
+      if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error('UNSUPPORTED');
+      const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});
+      stream.getTracks().forEach(track=>track.stop());
+    }
+    function microphoneError(error){
+      const name=error&&error.name||error&&error.message||'';
+      if(/NotAllowed|PermissionDenied|DENIED|not-allowed/i.test(name))return 'El micrófono está bloqueado. Haga clic en el candado de la barra de direcciones, seleccione Micrófono → Permitir y recargue la página.';
+      if(/NotFound|DevicesNotFound|audio-capture/i.test(name))return 'No se encontró un micrófono conectado al computador.';
+      if(/NotReadable|TrackStart|Abort/i.test(name))return 'El micrófono está ocupado por otra aplicación. Cierre otras llamadas o grabadores e intente nuevamente.';
+      if(/INSECURE/i.test(name))return 'El micrófono requiere una conexión HTTPS segura.';
+      return 'No fue posible iniciar el micrófono. Revise el permiso del sitio e intente nuevamente.';
+    }
+    if(!SR){mic.disabled=true;say('El reconocimiento de voz requiere Google Chrome o Microsoft Edge actualizado.',true)}else{
+      const recognition=new SR();let received=false;recognition.lang='es-CO';recognition.continuous=false;recognition.interimResults=false;recognition.maxAlternatives=1;
       recognition.onstart=()=>{mic.classList.add('on');mic.setAttribute('aria-pressed','true');say('Escuchando…')};
-      recognition.onend=()=>{mic.classList.remove('on');mic.setAttribute('aria-pressed','false')};
-      recognition.onerror=e=>say(e.error==='not-allowed'?'Permita el micrófono para este sitio':'No fue posible reconocer la voz',true);
-      recognition.onresult=e=>{const text=e.results[0][0].transcript;say('Procesando: '+text);frame.src=APP_URL+'?externalVoice=1&voice='+encodeURIComponent(text)+'&t='+Date.now()};
-      mic.onclick=()=>{try{recognition.start()}catch(e){recognition.stop()}};
+      recognition.onend=()=>{mic.classList.remove('on');mic.setAttribute('aria-pressed','false');mic.disabled=false;if(!received)say('No escuché una frase. Pulse el micrófono e intente otra vez.',true)};
+      recognition.onerror=e=>{received=true;mic.disabled=false;say(microphoneError({name:e.error}),true)};
+      recognition.onresult=e=>{received=true;const text=e.results[0][0].transcript;say('Procesando: '+text);frame.src=APP_URL+'?externalVoice=1&voice='+encodeURIComponent(text)+'&t='+Date.now()};
+      mic.onclick=async()=>{mic.disabled=true;received=false;say('Comprobando micrófono…');try{await requestMicrophone();recognition.start()}catch(error){mic.disabled=false;say(microphoneError(error),true)}};
     }
   </script>
 </body>
