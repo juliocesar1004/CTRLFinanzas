@@ -1,15 +1,163 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CTRLFinanzas · Micrófono</title>
+<style>
+  :root{--blue:#1457d9;--dark:#12304a;--red:#bb2845;--bg:#f4f7fb;--border:#d8e1eb}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);
+       color:#172b3a;font:16px system-ui,-apple-system,Segoe UI,sans-serif;padding:1.25rem;text-align:center}
+  .card{background:#fff;border:1px solid var(--border);border-radius:18px;padding:1.75rem 1.25rem;
+        box-shadow:0 6px 22px #17324d14;max-width:340px;width:100%}
+  .mic{display:grid;place-items:center;margin:0 auto 1rem;border:0;border-radius:50%;
+       width:104px;height:104px;background:linear-gradient(145deg,var(--blue),#0e8da1);
+       color:#fff;font-size:2.6rem;box-shadow:0 8px 28px #1457d944;cursor:pointer}
+  .mic.listening{background:var(--red);animation:pulse 1.25s infinite}
+  @keyframes pulse{50%{transform:scale(1.06);box-shadow:0 0 0 14px #bb28451c}}
+  h1{font-size:1.1rem;margin:0 0 .35rem}
+  p{margin:.35rem 0;color:#526575;font-size:.95rem}
+  .error{color:#8f1730;font-weight:650}
+  button.action{margin-top:1rem;min-height:48px;border:1px solid var(--blue);border-radius:12px;
+                background:var(--blue);color:#fff;padding:.7rem 1.4rem;font:inherit;font-weight:700;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="card">
+  <button id="mic" class="mic" aria-label="Hablar"><span aria-hidden="true">&#127897;</span></button>
+  <h1 id="titulo">Preparando micrófono…</h1>
+  <p id="detalle">Un momento por favor.</p>
+  <button id="reintentar" class="action" hidden>Hablar ahora</button>
+</div>
+
 <script>
-(function(){'use strict';
-const VOICE_ORIGIN='https://juliocesar1004.github.io';
-const VOICE_URL=VOICE_ORIGIN+'/CTRLFinanzas/voz.html';
-let voicePopup=null,voiceSession=null,voiceTimeout=null;
-function voiceId(){if(window.crypto&&crypto.getRandomValues){const bytes=new Uint32Array(4);crypto.getRandomValues(bytes);return Array.from(bytes,x=>x.toString(16)).join('')}return Date.now().toString(36)+Math.random().toString(36).slice(2)}
-function voiceUi(active,label){const mic=document.querySelector('[data-voz]'),text=document.querySelector('#listen');if(mic){mic.classList.toggle('listening',active);mic.setAttribute('aria-pressed',active?'true':'false')}if(text)text.textContent=label||'Toque para hablar'}
-function voiceNotice(message,error){const toast=document.querySelector('#toast');if(!toast)return;toast.textContent=message;toast.style.background=error?'#8f1730':'#17324d';toast.classList.add('show');window.setTimeout(()=>toast.classList.remove('show'),4200)}
-function closeVoicePopup(){window.clearTimeout(voiceTimeout);voiceTimeout=null;if(voicePopup&&!voicePopup.closed)voicePopup.close();voicePopup=null;voiceSession=null;voiceUi(false)}
-function voiceFailure(code,technical){const messages={popup_blocked:'El navegador bloqueó la ventana del micrófono. Permita ventanas emergentes para CTRLFinanzas.',unsupported:'Este navegador no admite reconocimiento de voz. Use Google Chrome o Microsoft Edge.',no_speech:'No se detectó voz. Pulse el micrófono e intente nuevamente.',timeout:'Se agotó el tiempo de escucha. Pulse el micrófono para volver a intentarlo.',not_allowed:'El permiso del micrófono fue denegado. Permítalo en la ventana de voz y vuelva a intentar.',service_not_allowed:'El servicio de reconocimiento de voz no está permitido en este navegador.',audio_capture:'No se encontró un micrófono disponible.',network:'No fue posible procesar la voz. Revise su conexión.',aborted:'La escucha fue cancelada.'};console.error('Error técnico del puente de voz:',{code,technical});closeVoicePopup();voiceNotice(messages[code]||'No fue posible usar el micrófono.',true)}
-function openVoicePopup(){if(voiceSession)return;const token=voiceId(),requestId='VOICE-'+voiceId();voiceSession={token,requestId};const width=420,height=560,left=Math.max(0,Math.round((screen.width-width)/2)),top=Math.max(0,Math.round((screen.height-height)/2));voicePopup=window.open(VOICE_URL+'#token='+encodeURIComponent(token),'CTRLFinanzasVoz',`popup=yes,width=${width},height=${height},left=${left},top=${top}`);if(!voicePopup){voiceSession=null;voiceFailure('popup_blocked','window.open devolvió null');return}voiceUi(true,'Abriendo micrófono…');voiceTimeout=window.setTimeout(()=>voiceFailure('timeout','La ventana de voz no respondió en 20 segundos'),20000)}
-document.addEventListener('click',event=>{const button=event.target.closest('[data-voz]');if(!button)return;event.preventDefault();event.stopPropagation();openVoicePopup()});
-window.addEventListener('message',event=>{const data=event.data||{};if(event.origin!==VOICE_ORIGIN||!voicePopup||event.source!==voicePopup||!voiceSession||data.source!=='CTRLFINANZAS_VOICE'||data.token!==voiceSession.token){if(data&&data.source==='CTRLFINANZAS_VOICE')console.warn('Mensaje de voz ignorado por origen, ventana o token inválido.',{origin:event.origin,type:data.type});return}if(data.type==='ready'){voicePopup.postMessage({source:'CTRLFINANZAS_APP',type:'start',token:voiceSession.token},VOICE_ORIGIN);voiceUi(true,'Escuchando…');return}if(data.type==='listening'){voiceUi(true,'Escuchando…');return}if(data.type==='result'){const text=String(data.text||'').trim(),requestId=voiceSession.requestId;if(!text){voiceFailure('no_speech','El puente devolvió una transcripción vacía');return}closeVoicePopup();const transcript=document.querySelector('#transcript');if(transcript)transcript.textContent=text;document.dispatchEvent(new CustomEvent('ctrlfinanzas:voice-result',{detail:{text,requestId}}));return}if(data.type==='error')voiceFailure(String(data.code||'unknown').replace(/-/g,'_'),data.technical||data)});
+(function(){
+  'use strict';
+
+  var TOKEN = (function(){
+    var m = /(?:^|[#&?])token=([^&]+)/.exec(String(location.hash || '') + String(location.search || ''));
+    return m ? decodeURIComponent(m[1]) : '';
+  })();
+
+  var appOrigin = '*';
+  var terminado = false;
+  var reconocimiento = null;
+  var recibioTexto = false;
+  var guardia = null;
+
+  var elMic = document.getElementById('mic');
+  var elTitulo = document.getElementById('titulo');
+  var elDetalle = document.getElementById('detalle');
+  var elReintentar = document.getElementById('reintentar');
+
+  function pintar(titulo, detalle, escuchando, esError){
+    elTitulo.textContent = titulo;
+    elDetalle.textContent = detalle || '';
+    elDetalle.className = esError ? 'error' : '';
+    elMic.classList.toggle('listening', !!escuchando);
+  }
+
+  function avisar(tipo, extra){
+    if (!window.opener || window.opener.closed) return;
+    var carga = { source: 'CTRLFINANZAS_VOICE', type: tipo, token: TOKEN };
+    if (extra) for (var k in extra) if (Object.prototype.hasOwnProperty.call(extra, k)) carga[k] = extra[k];
+    try { window.opener.postMessage(carga, appOrigin); } catch (e) { /* silencioso */ }
+  }
+
+  function fallar(codigo, tecnico){
+    if (terminado) return;
+    terminado = true;
+    window.clearTimeout(guardia);
+    console.error('Puente de voz:', codigo, tecnico);
+    avisar('error', { code: codigo, technical: String(tecnico || codigo) });
+    var textos = {
+      'not-allowed': 'Permiso denegado. Autorice el micrófono en esta ventana.',
+      'service-not-allowed': 'El reconocimiento de voz no está disponible aquí.',
+      'no-speech': 'No se escuchó nada.',
+      'audio-capture': 'No se encontró un micrófono.',
+      'network': 'Problema de conexión.',
+      'unsupported': 'Use Google Chrome o Microsoft Edge.',
+      'timeout': 'Se agotó el tiempo de espera.'
+    };
+    pintar('No fue posible', textos[codigo] || 'Intente nuevamente.', false, true);
+    elReintentar.hidden = false;
+    elReintentar.textContent = 'Intentar de nuevo';
+    window.setTimeout(function(){ try { window.close(); } catch (e) {} }, 6000);
+  }
+
+  function entregar(texto){
+    if (terminado) return;
+    terminado = true;
+    recibioTexto = true;
+    window.clearTimeout(guardia);
+    avisar('result', { text: texto });
+    pintar('Listo', texto, false, false);
+    window.setTimeout(function(){ try { window.close(); } catch (e) {} }, 500);
+  }
+
+  function crear(){
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return null;
+    var r = new SR();
+    r.lang = 'es-CO';
+    r.continuous = false;
+    r.interimResults = false;
+    r.maxAlternatives = 1;
+    r.onstart = function(){
+      avisar('listening');
+      pintar('Escuchando…', 'Diga: "Vendí dos leches"', true, false);
+    };
+    r.onresult = function(evento){
+      var texto = '';
+      try { texto = String(evento.results[0][0].transcript || '').trim(); } catch (e) { texto = ''; }
+      if (texto) entregar(texto); else fallar('no-speech', 'transcripción vacía');
+    };
+    r.onerror = function(evento){
+      fallar(String((evento && evento.error) || 'unknown'), (evento && evento.message) || '');
+    };
+    r.onend = function(){
+      if (!terminado && !recibioTexto) fallar('no-speech', 'onend sin resultado');
+    };
+    return r;
+  }
+
+  function escuchar(){
+    if (terminado) return;
+    elReintentar.hidden = true;
+    if (!reconocimiento) reconocimiento = crear();
+    if (!reconocimiento) return fallar('unsupported', 'SpeechRecognition no existe en este navegador');
+    try {
+      reconocimiento.start();
+    } catch (error) {
+      if (error && error.name === 'InvalidStateError') return;
+      pintar('Pulse para hablar', 'El navegador pide una acción suya.', false, false);
+      elReintentar.hidden = false;
+    }
+  }
+
+  elMic.addEventListener('click', escuchar);
+  elReintentar.addEventListener('click', escuchar);
+
+  window.addEventListener('message', function(evento){
+    var datos = evento.data || {};
+    if (datos.source !== 'CTRLFINANZAS_APP') return;
+    if (TOKEN && datos.token !== TOKEN) return;
+    appOrigin = evento.origin || '*';
+    if (datos.type === 'start') escuchar();
+  });
+
+  if (!window.opener || window.opener.closed) {
+    pintar('Abra desde CTRLFinanzas', 'Esta ventana funciona junto a la aplicación.', false, true);
+    return;
+  }
+
+  guardia = window.setTimeout(function(){ fallar('timeout', 'sin actividad en 18 segundos'); }, 18000);
+
+  pintar('Preparando micrófono…', 'Autorice el micrófono si Chrome lo pide.', false, false);
+  avisar('ready');
+  window.setTimeout(escuchar, 250);
 })();
 </script>
+</body>
+</html>
